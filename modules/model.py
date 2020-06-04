@@ -152,10 +152,16 @@ class GeneratorFullModel(torch.nn.Module):
         kp_source = self.kp_extractor(x['source'])
         kp_driving = self.kp_extractor(x['driving'])
 
+        kp_target = x['keypoints']
+        kp_is_supervised = x['supervised_kp'].unsqueeze(-1).expand_as(kp_target[:, 0])
+
         generated = self.generator(x['source'], kp_source=kp_source, kp_driving=kp_driving)
         generated.update({'kp_source': kp_source, 'kp_driving': kp_driving})
 
         loss_values = {}
+
+        loss_values['kp_supervised'] = (kp_is_supervised * ((kp_target[:, 0] - kp_source['values'][:, :kp_target.size(2)])**2 +
+                                                            (kp_target[:, 1] - kp_driving['values'][:, :kp_target.size(2)])**2)).mean()
 
         pyramide_real = self.pyramid(x['driving'])
         pyramide_generated = self.pyramid(generated['prediction'])

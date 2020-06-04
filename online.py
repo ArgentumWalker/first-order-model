@@ -82,13 +82,15 @@ class Animator:
 
 
 if __name__ == "__main__":
-    generator, kp_detector = load_checkpoints(config_path='config/vox-adv-256.yaml',
-                                              checkpoint_path='./vox-adv-cpk.pth.tar')
+    generator, kp_detector = load_checkpoints(config_path='config/vox-256-ft.yaml',
+                                              checkpoint_path='./vox-ft.pth.tar')
 
     target_img = resize(imageio.imread('./putin3.jpg'), (256, 256))
     #target_img = resize(imageio.imread('./statue-01.jpg'), (256, 256))
     #target_img = resize(imageio.imread('./mandarin.jpg'), (256, 256))
+    #target_img = resize(imageio.imread('./kyzya.jpg'), (256, 256))
     #target_img = resize(imageio.imread('./smithuber.jpg'), (256, 256))
+    #target_img = resize(imageio.imread('./oleg2.jpg'), (256, 256))
     start_img = np.zeros_like(target_img)
     pred_img = np.zeros_like(target_img)
 

@@ -21,8 +21,8 @@ from scipy.spatial import ConvexHull
 if sys.version_info[0] < 3:
     raise Exception("You must use Python 3 or higher. Recommended version is Python 3.7")
 
-def load_checkpoints(config_path, checkpoint_path, cpu=False):
 
+def load_checkpoints(config_path, checkpoint_path, cpu=False):
     with open(config_path) as f:
         config = yaml.load(f)
 
@@ -77,6 +77,7 @@ def make_animation(source_image, driving_video, generator, kp_detector, relative
             predictions.append(np.transpose(out['prediction'].data.cpu().numpy(), [0, 2, 3, 1])[0])
     return predictions
 
+
 def find_best_frame(source, driving, cpu=False):
     import face_alignment
 
@@ -101,6 +102,7 @@ def find_best_frame(source, driving, cpu=False):
             norm = new_norm
             frame_num = i
     return frame_num
+
 
 if __name__ == "__main__":
     parser = ArgumentParser()

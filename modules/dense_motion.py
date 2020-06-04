@@ -22,6 +22,7 @@ class DenseMotionNetwork(nn.Module):
         else:
             self.occlusion = None
 
+        self.num_channels = num_channels
         self.num_kp = num_kp
         self.scale_factor = scale_factor
         self.kp_variance = kp_variance

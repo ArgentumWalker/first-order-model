@@ -61,9 +61,11 @@ class FramesDataset(Dataset):
     """
 
     def __init__(self, root_dir, frame_shape=(256, 256, 3), id_sampling=False, is_train=True,
-                 random_seed=0, pairs_list=None, augmentation_params=None):
+                 random_seed=0, pairs_list=None, augmentation_params=None,
+                 keypoints_ids=(0, 8, 16, 19, 24, 27, 30, 37, 41, 43, 47, 48, 51, 54, 57)):
         self.root_dir = root_dir
-        self.videos = os.listdir(root_dir)
+        self.videos = [f for f in os.listdir(root_dir) if f[-4:] == '.mp4']
+        self.keypoints_ids = keypoints_ids
         self.frame_shape = tuple(frame_shape)
         self.pairs_list = pairs_list
         self.id_sampling = id_sampling
@@ -107,22 +109,25 @@ class FramesDataset(Dataset):
 
         video_name = os.path.basename(path)
 
-        if self.is_train and os.path.isdir(path):
-            frames = os.listdir(path)
-            num_frames = len(frames)
-            frame_idx = np.sort(np.random.choice(num_frames, replace=True, size=2))
-            video_array = [img_as_float32(io.imread(os.path.join(path, frames[idx]))) for idx in frame_idx]
-        else:
-            video_array = read_video(path, frame_shape=self.frame_shape)
-            num_frames = len(video_array)
-            frame_idx = np.sort(np.random.choice(num_frames, replace=True, size=2)) if self.is_train else range(
-                num_frames)
-            video_array = video_array[frame_idx]
+        video_array = read_video(path, frame_shape=self.frame_shape)
+        num_frames = len(video_array)
+        frame_idx = np.sort(np.random.choice(num_frames, replace=True, size=2)) if self.is_train else range(
+            num_frames)
+        video_array = video_array[frame_idx]
 
         if self.transform is not None:
             video_array = self.transform(video_array)
 
         out = {}
+
+        keypoints_path = path[:-4] + '.npz'
+        if os.path.exists(keypoints_path):
+            out['keypoints'] = 2 * np.load(keypoints_path)[frame_idx, self.keypoints_ids, :2] / self.frame_shape[0] - 1
+            out['supervised_kp'] = np.ones(1)
+        else:
+            out['keypoints'] = np.zeros((2, len(self.keypoints_ids), 2))
+            out['supervised_kp'] = np.zeros(1)
+
         if self.is_train:
             source = np.array(video_array[0], dtype='float32')
             driving = np.array(video_array[1], dtype='float32')
